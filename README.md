@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Required for branch creation & issues
       
       - name: Analyze with Consciousness Lab
         uses: idea-nexus-ventures/analyze-action@v1
@@ -51,11 +53,32 @@ Results appear as:
    - Name: `OPENROUTER_API_KEY`
    - Value: your key
 
-### 2. Add Workflow File
+### 2. Set Up Permissions
+
+**For full functionality** (branches + issues), add `GITHUB_TOKEN` to your workflow:
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}  # Required for branch creation & issues
+```
+
+**Note**: `GITHUB_TOKEN` is automatically provided by GitHub Actions - no setup needed!
+
+**For analysis only** (no branches/issues), you can skip the token:
+```yaml
+- uses: idea-nexus-ventures/analyze-action@v1
+  with:
+    openrouter_key: ${{ secrets.OPENROUTER_API_KEY }}
+    create_branches: 'false'
+    create_summary: 'false'
+```
+
+### 3. Add Workflow File
 
 Create `.github/workflows/analyze.yml` with the usage example above.
 
-### 3. Push to Trigger
+### 4. Push to Trigger
 
 ```bash
 git add .github/workflows/analyze.yml
@@ -229,6 +252,38 @@ MIT
 - 🚀 **Initial release**: Multi-perspective AI analysis
 - ✨ **Features**: 4 AI agents, branch creation, summary issues
 - ✨ **Support**: All programming languages
+
+## Troubleshooting
+
+### Permission Errors
+
+If you see errors like:
+- `Permission denied to github-actions[bot]`
+- `Resource not accessible by integration`
+
+**Solution**: Add `GITHUB_TOKEN` to your checkout step:
+```yaml
+- uses: actions/checkout@v4
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Analysis Only Mode
+
+If you don't need branches or issues, disable them:
+```yaml
+- uses: idea-nexus-ventures/analyze-action@v1
+  with:
+    openrouter_key: ${{ secrets.OPENROUTER_API_KEY }}
+    create_branches: 'false'
+    create_summary: 'false'
+```
+
+### Common Issues
+
+- **"Cannot find module"**: Make sure you're using the latest version (`@v1`)
+- **"OpenRouter API error"**: Check your API key is valid and has credits
+- **"No insights generated"**: Try with a more complex codebase
 
 ## Support
 
