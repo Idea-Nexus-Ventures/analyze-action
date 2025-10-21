@@ -65,16 +65,8 @@ runs:
       with:
         node-version: '20'
     
-    - name: Checkout Consciousness Lab
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ github.action_repository }}
-        ref: ${{ github.action_ref }}
-        path: .consciousness-lab
-    
     - name: Install Dependencies
       shell: bash
-      working-directory: .consciousness-lab
       run: |
         echo "📦 Installing dependencies..."
         npm install --production --silent
@@ -90,8 +82,7 @@ runs:
         
         if [ "$CREATE_BRANCHES" = "true" ]; then
           echo "Creating agent branches..."
-          cd $GITHUB_WORKSPACE/.consciousness-lab
-          node bin/agents.js init
+          node $GITHUB_ACTION_PATH/bin/agents.js init
         fi
     
     - name: Run Agent Analysis
@@ -124,7 +115,7 @@ runs:
           # Call the analysis script
           export GITHUB_WORKSPACE_PATH=$GITHUB_WORKSPACE
           cd $GITHUB_WORKSPACE
-          RESULT=$(node $GITHUB_WORKSPACE/.consciousness-lab/bin/run-agent.js \
+          RESULT=$(node $GITHUB_ACTION_PATH/bin/run-agent.js \
             --agent="$agent" \
             --model="$MODEL" \
             --output="json")

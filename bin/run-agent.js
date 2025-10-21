@@ -31,9 +31,7 @@ async function runAgent() {
     });
 
     // Load character
-    const actionPath = process.env.GITHUB_WORKSPACE_PATH 
-      ? join(process.env.GITHUB_WORKSPACE, '.consciousness-lab')
-      : process.cwd();
+    const actionPath = process.env.GITHUB_ACTION_PATH || process.cwd();
     
     const characterSystem = new CharacterSystem(
       join(actionPath, 'characters', 'project-analysis.json')
