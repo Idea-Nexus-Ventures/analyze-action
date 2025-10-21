@@ -12,7 +12,13 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 
 const program = new Command();
-const packageJson = JSON.parse(await readFile(join(process.cwd(), 'package.json'), 'utf-8'));
+
+// Get package.json from the action directory, not the user's repo
+const actionDir = process.env.GITHUB_WORKSPACE_PATH 
+  ? join(process.env.GITHUB_WORKSPACE, '.consciousness-lab')
+  : process.cwd();
+
+const packageJson = JSON.parse(await readFile(join(actionDir, 'package.json'), 'utf-8'));
 
 program
   .name('clab-agents')
@@ -26,7 +32,9 @@ program
     console.log(chalk.bold.magenta('\n🤖 Initializing Agent System\n'));
     const spinner = ora('Creating agent branches...').start();
     try {
-      const github = new GitHubIntegration();
+      // GitHubIntegration should work in the user's repo, not the action directory
+      const userRepoPath = process.env.GITHUB_WORKSPACE || process.cwd();
+      const github = new GitHubIntegration(userRepoPath);
       await github.initializeAgentBranches();
       spinner.succeed('Agent branches initialized');
       console.log(chalk.green('\n✅ Agent system ready!'));
@@ -49,7 +57,9 @@ program
     console.log(chalk.bold.magenta('\n🔄 Updating Agents\n'));
     const spinner = ora('Analyzing repository...').start();
     try {
-      const github = new GitHubIntegration();
+      // GitHubIntegration should work in the user's repo, not the action directory
+      const userRepoPath = process.env.GITHUB_WORKSPACE || process.cwd();
+      const github = new GitHubIntegration(userRepoPath);
       const repoContext = await github.getRepoContext();
       spinner.text = 'Running agent analysis...';
       await runAgentUpdate(repoContext);

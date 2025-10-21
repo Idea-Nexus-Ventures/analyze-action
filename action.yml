@@ -90,7 +90,8 @@ runs:
         
         if [ "$CREATE_BRANCHES" = "true" ]; then
           echo "Creating agent branches..."
-          node $GITHUB_WORKSPACE/.consciousness-lab/bin/agents.js init
+          cd $GITHUB_WORKSPACE/.consciousness-lab
+          node bin/agents.js init
         fi
     
     - name: Run Agent Analysis
