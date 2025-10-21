@@ -218,6 +218,18 @@ jobs:
 
 MIT
 
+## Changelog
+
+### v1.0.1 (Latest)
+- 🐛 **Fixed**: Path issues in GitHub Actions environment
+- 🐛 **Fixed**: `agents.js` module resolution
+- 🐛 **Fixed**: `GitHubIntegration` working directory
+
+### v1.0.0
+- 🚀 **Initial release**: Multi-perspective AI analysis
+- ✨ **Features**: 4 AI agents, branch creation, summary issues
+- ✨ **Support**: All programming languages
+
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/idea-nexus-ventures/analyze-action/issues)
