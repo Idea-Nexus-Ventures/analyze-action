@@ -86,9 +86,12 @@ async function getRepositoryContext() {
     packageInfo: null
   };
 
-  // Try to read package.json
+  // Use the user's repo directory, not the action directory
+  const userRepoPath = process.env.GITHUB_WORKSPACE || process.cwd();
+  
+  // Try to read package.json from user's repo
   try {
-    const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+    const packageJson = JSON.parse(await readFile(join(userRepoPath, 'package.json'), 'utf8'));
     context.packageInfo = {
       name: packageJson.name,
       description: packageJson.description,
@@ -98,8 +101,8 @@ async function getRepositoryContext() {
     // No package.json, that's ok
   }
 
-  // Get file structure (limited)
-  const files = await getFilesRecursively('.', [
+  // Get file structure from user's repo (limited)
+  const files = await getFilesRecursively(userRepoPath, [
     '.git', 'node_modules', '.consciousness-lab', 'dist', 'build'
   ]);
   context.structure = files.slice(0, 100);
@@ -124,7 +127,10 @@ async function getFilesRecursively(dir, ignoreDirs = []) {
           files.push(...(await getFilesRecursively(fullPath, ignoreDirs)));
         }
       } else {
-        files.push(fullPath);
+        // Return relative path from the user's repo root
+        const userRepoPath = process.env.GITHUB_WORKSPACE || process.cwd();
+        const relativePath = fullPath.replace(userRepoPath + '/', '');
+        files.push(relativePath);
       }
     }
   } catch (error) {
