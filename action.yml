@@ -1,0 +1,247 @@
+name: 'Consciousness Lab - AI Agent Analysis'
+description: 'Multi-perspective AI analysis of your codebase with 4 recursive agent levels'
+author: 'Consciousness Lab'
+
+branding:
+  icon: 'users'
+  color: 'purple'
+
+inputs:
+  openrouter_key:
+    description: 'OpenRouter API key for LLM access'
+    required: true
+  
+  agents:
+    description: 'Which agents to run (comma-separated: architect,educator,visionary,philosopher or "all")'
+    required: false
+    default: 'all'
+  
+  model:
+    description: 'LLM model to use (e.g., anthropic/claude-3.5-sonnet)'
+    required: false
+    default: 'anthropic/claude-3.5-sonnet'
+  
+  create_branches:
+    description: 'Whether to create agent branches (true/false)'
+    required: false
+    default: 'true'
+  
+  create_summary:
+    description: 'Whether to create a summary issue (true/false)'
+    required: false
+    default: 'true'
+  
+  working_directory:
+    description: 'Directory to analyze (defaults to repository root)'
+    required: false
+    default: '.'
+
+outputs:
+  architect_insights:
+    description: 'Architectural insights from Level 1 analysis'
+    value: ${{ steps.analysis.outputs.architect }}
+  
+  educator_insights:
+    description: 'Learning insights from Level 2 analysis'
+    value: ${{ steps.analysis.outputs.educator }}
+  
+  visionary_insights:
+    description: 'Possibility insights from Level 3 analysis'
+    value: ${{ steps.analysis.outputs.visionary }}
+  
+  philosopher_insights:
+    description: 'Meta-cognitive insights from Level 4 analysis'
+    value: ${{ steps.analysis.outputs.philosopher }}
+  
+  summary_url:
+    description: 'URL to the summary issue created'
+    value: ${{ steps.summary.outputs.issue_url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Checkout Consciousness Lab
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.action_repository }}
+        ref: ${{ github.action_ref }}
+        path: .consciousness-lab
+    
+    - name: Install Dependencies
+      shell: bash
+      working-directory: .consciousness-lab
+      run: |
+        echo "📦 Installing dependencies..."
+        npm install --production --silent
+    
+    - name: Initialize Agent System
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      env:
+        CREATE_BRANCHES: ${{ inputs.create_branches }}
+      run: |
+        echo "🤖 Initializing Consciousness Lab"
+        echo "=================================="
+        
+        if [ "$CREATE_BRANCHES" = "true" ]; then
+          echo "Creating agent branches..."
+          node $GITHUB_WORKSPACE/.consciousness-lab/bin/agents.js init
+        fi
+    
+    - name: Run Agent Analysis
+      id: analysis
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      env:
+        OPENROUTER_API_KEY: ${{ inputs.openrouter_key }}
+        AGENTS: ${{ inputs.agents }}
+        MODEL: ${{ inputs.model }}
+      run: |
+        echo "🔍 Running Agent Analysis"
+        echo "========================="
+        
+        # Determine which agents to run
+        if [ "$AGENTS" = "all" ]; then
+          AGENT_LIST="architect,educator,visionary,philosopher"
+        else
+          AGENT_LIST="$AGENTS"
+        fi
+        
+        IFS=',' read -ra AGENT_ARRAY <<< "$AGENT_LIST"
+        
+        # Run each agent
+        for agent in "${AGENT_ARRAY[@]}"; do
+          agent=$(echo "$agent" | xargs)  # trim whitespace
+          echo ""
+          echo "📋 Running $agent analysis..."
+          
+          # Call the analysis script
+          export GITHUB_WORKSPACE_PATH=$GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE
+          RESULT=$(node $GITHUB_WORKSPACE/.consciousness-lab/bin/run-agent.js \
+            --agent="$agent" \
+            --model="$MODEL" \
+            --output="json")
+          
+          # Save output
+          echo "$RESULT" > "/tmp/${agent}-output.json"
+          
+          # Extract summary for GitHub output
+          SUMMARY=$(echo "$RESULT" | jq -r '.summary // "Analysis complete"')
+          echo "${agent}=$SUMMARY" >> $GITHUB_OUTPUT
+          
+          echo "✓ $agent analysis complete"
+        done
+        
+        echo ""
+        echo "✅ All agent analyses complete!"
+    
+    - name: Update Agent Branches
+      shell: bash
+      if: inputs.create_branches == 'true'
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        echo "📝 Updating agent branches..."
+        
+        git config user.name "Consciousness Lab Bot"
+        git config user.email "bot@consciousness-lab"
+        
+        # Update each agent branch
+        for agent in architect educator visionary philosopher; do
+          if [ -f "/tmp/${agent}-output.json" ]; then
+            echo "Updating agent/${agent}..."
+            
+            # Create/update branch
+            git checkout -B "agent/${agent}" 2>/dev/null || git checkout "agent/${agent}"
+            
+            # Update state file
+            mkdir -p .agent-states
+            cp "/tmp/${agent}-output.json" ".agent-states/${agent}.json"
+            
+            # Commit changes
+            git add .agent-states/
+            git commit -m "🤖 ${agent}: Updated from Consciousness Lab action" || true
+            git push -f origin "agent/${agent}" || true
+          fi
+        done
+        
+        # Return to main/master
+        git checkout "${GITHUB_REF#refs/heads/}" || git checkout main || git checkout master
+        
+        echo "✓ Agent branches updated"
+    
+    - name: Create Summary Issue
+      id: summary
+      if: inputs.create_summary == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Read all agent outputs
+          const agents = ['architect', 'educator', 'visionary', 'philosopher'];
+          const insights = {};
+          
+          for (const agent of agents) {
+            const path = `/tmp/${agent}-output.json`;
+            if (fs.existsSync(path)) {
+              insights[agent] = JSON.parse(fs.readFileSync(path, 'utf8'));
+            }
+          }
+          
+          // Build summary
+          let body = `## 🤖 Consciousness Lab Analysis\n\n`;
+          body += `**Analyzed by**: ${agents.filter(a => insights[a]).length} AI agents\n`;
+          body += `**Date**: ${new Date().toISOString()}\n`;
+          body += `**Commit**: ${context.sha.substring(0, 7)}\n\n`;
+          body += `---\n\n`;
+          
+          if (insights.architect) {
+            body += `### 🏗️ Architect (Level 1 - Structure)\n\n`;
+            body += `${insights.architect.summary || 'No summary available'}\n\n`;
+          }
+          
+          if (insights.educator) {
+            body += `### 📚 Educator (Level 2 - Learning)\n\n`;
+            body += `${insights.educator.summary || 'No summary available'}\n\n`;
+          }
+          
+          if (insights.visionary) {
+            body += `### 🔮 Visionary (Level 3 - Possibilities)\n\n`;
+            body += `${insights.visionary.summary || 'No summary available'}\n\n`;
+          }
+          
+          if (insights.philosopher) {
+            body += `### 🤔 Philosopher (Level 4 - Meta-cognition)\n\n`;
+            body += `${insights.philosopher.summary || 'No summary available'}\n\n`;
+          }
+          
+          body += `---\n\n`;
+          body += `*Generated by [Consciousness Lab](https://github.com/your-org/consciousness-lab)*\n`;
+          
+          // Create issue
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🤖 AI Agent Analysis - ${new Date().toISOString().split('T')[0]}`,
+            body: body,
+            labels: ['consciousness-lab', 'ai-analysis']
+          });
+          
+          core.setOutput('issue_url', issue.data.html_url);
+          console.log(`✓ Summary issue created: ${issue.data.html_url}`);
+          
+          return issue.data.number;
+    
+    - name: Cleanup
+      shell: bash
+      if: always()
+      run: |
+        rm -rf .consciousness-lab
+        rm -f /tmp/*-output.json
+
