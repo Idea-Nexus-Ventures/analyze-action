@@ -24,7 +24,7 @@ export class ModelAdapter {
         }
       ],
       temperature: options.temperature || 0.7,
-      max_tokens: options.maxTokens || 4000
+      max_tokens: options.maxTokens || 8000
     };
 
     try {

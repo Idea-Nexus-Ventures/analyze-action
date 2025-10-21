@@ -143,10 +143,16 @@ async function getFilesRecursively(dir, ignoreDirs = []) {
 async function analyzeRepository(agentState, modelAdapter, character) {
   const repoContext = await getRepositoryContext();
   
+  // Limit repository context to avoid token limits
+  const limitedContext = {
+    ...repoContext,
+    structure: repoContext.structure.slice(0, 50) // Limit to 50 files
+  };
+
   const prompt = `You are ${character.name} (Level ${character.level} - ${character.level_name}).
 
 Analyze this repository structure:
-${JSON.stringify(repoContext, null, 2)}
+${JSON.stringify(limitedContext, null, 2)}
 
 Based on your level ${character.level} perspective, provide:
 1. A summary of what you observe
