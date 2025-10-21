@@ -153,12 +153,15 @@ Based on your level ${character.level} perspective, provide:
 2. 3-5 key insights specific to your domain
 3. Entities for your knowledge base
 
-Respond in JSON format:
+IMPORTANT: Respond ONLY with valid JSON. No additional text before or after.
+
 {
-  "summary": "Brief overview",
-  "insights": ["insight 1", "insight 2", ...],
+  "summary": "Brief overview of what you see",
+  "insights": ["insight 1", "insight 2", "insight 3"],
   "entities": {
-    // Your level-specific entities
+    "components": ["component1", "component2"],
+    "patterns": ["pattern1"],
+    "concepts": ["concept1"]
   }
 }`;
 
@@ -168,14 +171,21 @@ Respond in JSON format:
     // Try to parse JSON from response
     const jsonMatch = response.text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      const jsonStr = jsonMatch[0];
+      // Validate JSON before parsing
+      if (jsonStr.includes('"summary"') && jsonStr.includes('"insights"')) {
+        return JSON.parse(jsonStr);
+      }
     }
   } catch (e) {
-    // If parsing fails, return basic structure
+    console.warn(`JSON parsing failed for ${character.name}:`, e.message);
   }
 
+  // Fallback: extract summary from response text
+  const summary = response.text.substring(0, 500).replace(/[{}"]/g, '').trim();
+  
   return {
-    summary: response.text.substring(0, 500),
+    summary: summary || 'Analysis completed successfully',
     insights: ['Analysis completed successfully'],
     entities: {}
   };

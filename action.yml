@@ -19,7 +19,7 @@ inputs:
   model:
     description: 'LLM model to use (e.g., anthropic/claude-3.5-sonnet)'
     required: false
-    default: 'anthropic/claude-3.5-sonnet'
+    default: 'meta-llama/llama-4-scout:free'
   
   create_branches:
     description: 'Whether to create agent branches (true/false)'
