@@ -173,6 +173,12 @@ runs:
             mkdir -p .agent-states
             cp "/tmp/${agent}-output.json" ".agent-states/${agent}.json"
             
+            # Update notes (if deep dive was run)
+            if [ -d ".agent-notes" ]; then
+              echo "Updating agent notes..."
+              git add .agent-notes/
+            fi
+            
             # Commit changes
             git add .agent-states/
             git commit -m "🤖 ${agent}: Updated from Consciousness Lab action" || true

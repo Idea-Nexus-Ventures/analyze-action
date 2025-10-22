@@ -11,7 +11,9 @@ export class NotesCache {
   constructor(agentId, basePath = '.agent-notes') {
     this.agentId = agentId;
     this.basePath = basePath;
-    this.notesPath = join(basePath, agentId);
+    // Notes are stored in the agent's branch, so just use the base path
+    // Each agent branch will have its own .agent-notes directory
+    this.notesPath = basePath;
   }
 
   async ensureNotesDirectory() {
@@ -137,7 +139,7 @@ export class NotesCache {
   getNotePath(path, level) {
     // Sanitize path for filesystem
     const sanitizedPath = path.replace(/[^a-zA-Z0-9/._-]/g, '_');
-    const fileName = `${level}.json`;
+    const fileName = `${level}-${this.agentId}.json`; // Include agent ID in filename
     
     if (path === '.' || path === '') {
       return join(this.notesPath, 'root', fileName);
