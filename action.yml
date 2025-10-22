@@ -266,7 +266,9 @@ runs:
             if (coachingInsights.coachingReport.quick_wins && coachingInsights.coachingReport.quick_wins.length > 0) {
               body += `### ⚡ Quick Wins\n\n`;
               coachingInsights.coachingReport.quick_wins.forEach(win => {
-                body += `- ${win}\n`;
+                // Handle both string and object quick wins
+                const winText = typeof win === 'string' ? win : (win.text || win.description || win.title || JSON.stringify(win));
+                body += `- ${winText}\n`;
               });
               body += `\n`;
             }
@@ -274,7 +276,9 @@ runs:
             if (coachingInsights.coachingReport.recommendations && coachingInsights.coachingReport.recommendations.length > 0) {
               body += `### 💡 Recommendations\n\n`;
               coachingInsights.coachingReport.recommendations.forEach(rec => {
-                body += `- ${rec}\n`;
+                // Handle both string and object recommendations
+                const recText = typeof rec === 'string' ? rec : (rec.text || rec.description || rec.title || JSON.stringify(rec));
+                body += `- ${recText}\n`;
               });
               body += `\n`;
             }
