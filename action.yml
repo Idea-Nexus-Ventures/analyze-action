@@ -122,8 +122,12 @@ runs:
             --model="$MODEL" \
             --output="json")
           
-          # Save output
+          # Save output to temp file
           echo "$RESULT" > "/tmp/${agent}-output.json"
+          
+          # Also save to .agent-states directory for coaching system
+          mkdir -p "$GITHUB_WORKSPACE/.agent-states"
+          echo "$RESULT" > "$GITHUB_WORKSPACE/.agent-states/${agent}.json"
           
           # Extract summary for GitHub output
           SUMMARY=$(echo "$RESULT" | jq -r '.summary // "Analysis complete"')

@@ -55,6 +55,12 @@ async function runCoaching() {
         agentInsights[agent] = JSON.parse(data);
       } catch (e) {
         console.warn(`Could not load insights for ${agent}:`, e.message);
+        // Create a minimal insight structure to prevent crashes
+        agentInsights[agent] = {
+          summary: `Analysis for ${agent} not available`,
+          insights: [`No insights available for ${agent}`],
+          entities: {}
+        };
       }
     }
 
