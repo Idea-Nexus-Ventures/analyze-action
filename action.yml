@@ -148,8 +148,17 @@ runs:
         echo ""
         echo "🎓 Starting coaching session..."
         cd $GITHUB_ACTION_PATH
-        node bin/coaching.js --output="json" > "/tmp/coaching-output.json"
-        echo "✓ Coaching session complete"
+        
+        # Set environment variable for coaching system
+        export GITHUB_WORKSPACE_PATH=$GITHUB_WORKSPACE
+        
+        # Run coaching with error handling
+        if node bin/coaching.js --output="json" > "/tmp/coaching-output.json" 2>/dev/null; then
+          echo "✓ Coaching session complete"
+        else
+          echo "⚠️ Coaching session failed, but continuing..."
+          echo '{"coachingReport": {"executive_summary": "Coaching report generation failed"}}' > "/tmp/coaching-output.json"
+        fi
     
     - name: Update Agent Branches
       shell: bash

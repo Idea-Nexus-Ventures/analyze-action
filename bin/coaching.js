@@ -47,7 +47,9 @@ async function runCoaching() {
           data = await readFile(tempPath, 'utf8');
         } catch (tempError) {
           // Fallback to .agent-states if temp files don't exist
-          const insightPath = join(process.env.GITHUB_WORKSPACE || process.cwd(), '.agent-states', `${agent}.json`);
+          const workspacePath = process.env.GITHUB_WORKSPACE || process.cwd();
+          const insightPath = join(workspacePath, '.agent-states', `${agent}.json`);
+          console.warn(`Temp file not found for ${agent}, trying: ${insightPath}`);
           data = await readFile(insightPath, 'utf8');
         }
         agentInsights[agent] = JSON.parse(data);

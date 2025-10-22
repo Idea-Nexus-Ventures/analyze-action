@@ -107,7 +107,7 @@ Respond in JSON format:
           discussion: response
         };
       } catch (error) {
-        console.warn(`Failed to get discussion from ${agent.name}:`, error.message);
+        console.warn(`Failed to get discussion from ${agentId}:`, error.message);
         discussions[agentId] = {
           character: character,
           discussion: {
