@@ -1,6 +1,6 @@
 {
   "name": "@idea-nexus-ventures/analyze-action",
-  "version": "1.0.0",
+  "version": "1.2.6",
   "description": "Multi-perspective AI analysis GitHub Action for codebases",
   "type": "module",
   "main": "src/index.js",

@@ -243,10 +243,11 @@ MIT
 
 ## Changelog
 
-### v1.0.1 (Latest)
-- 🐛 **Fixed**: Path issues in GitHub Actions environment
-- 🐛 **Fixed**: `agents.js` module resolution
-- 🐛 **Fixed**: `GitHubIntegration` working directory
+### v1.2.6 (Latest)
+- 🐛 **Fixed**: "agent is not defined" error in coaching system
+- 🐛 **Fixed**: Agent state file path resolution issues
+- 🐛 **Fixed**: Action crashes when coaching session fails
+- ✨ **Improved**: Error handling and recovery mechanisms
 
 ### v1.0.0
 - 🚀 **Initial release**: Multi-perspective AI analysis
