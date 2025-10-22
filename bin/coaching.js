@@ -40,8 +40,16 @@ async function runCoaching() {
     
     for (const agent of agents) {
       try {
-        const insightPath = join(process.env.GITHUB_WORKSPACE || process.cwd(), '.agent-states', `${agent}.json`);
-        const data = await readFile(insightPath, 'utf8');
+        // First try the temporary files from the current run
+        const tempPath = `/tmp/${agent}-output.json`;
+        let data;
+        try {
+          data = await readFile(tempPath, 'utf8');
+        } catch (tempError) {
+          // Fallback to .agent-states if temp files don't exist
+          const insightPath = join(process.env.GITHUB_WORKSPACE || process.cwd(), '.agent-states', `${agent}.json`);
+          data = await readFile(insightPath, 'utf8');
+        }
         agentInsights[agent] = JSON.parse(data);
       } catch (e) {
         console.warn(`Could not load insights for ${agent}:`, e.message);
