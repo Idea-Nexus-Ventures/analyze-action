@@ -16,7 +16,7 @@ const { values } = parseArgs({
     agent: { type: 'string', default: 'architect' },
     model: { type: 'string', default: 'anthropic/claude-3.5-sonnet' },
     output: { type: 'string', default: 'json' },
-    maxDepth: { type: 'number', default: 3 },
+    maxDepth: { type: 'string', default: '3' },
     includeFiles: { type: 'boolean', default: true },
     includeDirectories: { type: 'boolean', default: true },
     includeModules: { type: 'boolean', default: true }
@@ -52,7 +52,7 @@ async function runDeepDive() {
     
     // Run deep dive analysis
     const results = await deepDiveAnalyzer.deepDiveAnalysis(repoPath, {
-      maxDepth: values.maxDepth,
+      maxDepth: parseInt(values.maxDepth, 10),
       includeFiles: values.includeFiles,
       includeDirectories: values.includeDirectories,
       includeModules: values.includeModules
