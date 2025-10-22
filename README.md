@@ -243,7 +243,13 @@ MIT
 
 ## Changelog
 
-### v1.2.6 (Latest)
+### v1.2.7 (Latest)
+- 🐛 **Fixed**: Agent state file creation timing issue
+- 🐛 **Fixed**: ENOENT errors when coaching system can't find agent state files
+- 🐛 **Fixed**: Coaching system running before agent state files are created
+- ✨ **Improved**: Agent state files are now created during analysis step
+
+### v1.2.6
 - 🐛 **Fixed**: "agent is not defined" error in coaching system
 - 🐛 **Fixed**: Agent state file path resolution issues
 - 🐛 **Fixed**: Action crashes when coaching session fails
