@@ -50,6 +50,12 @@ export class DeepDiveAnalyzer {
   async analyzeDirectory(dirPath, repoContext, maxDepth = 3) {
     console.log(`📁 Analyzing directory: ${dirPath}`);
     
+    // Skip directories with problematic names
+    if (this.shouldSkipDirectory(dirPath)) {
+      console.log(`  ⏭️ Skipping problematic directory: ${dirPath}`);
+      return null;
+    }
+    
     // Check if we already have notes for this directory
     const existingNote = await this.notesCache.loadNote(dirPath, 'directory');
     if (existingNote && this.isNoteRecent(existingNote)) {
@@ -59,6 +65,12 @@ export class DeepDiveAnalyzer {
 
     // Get directory structure and contents
     const dirInfo = await this.getDirectoryInfo(dirPath, maxDepth);
+    
+    // Skip if directory is too large or complex
+    if (this.shouldSkipLargeDirectory(dirInfo)) {
+      console.log(`  ⏭️ Skipping large directory: ${dirPath}`);
+      return null;
+    }
     
     // Analyze directory
     const character = this.characterSystem.getCharacter(this.agentId);
@@ -250,13 +262,19 @@ export class DeepDiveAnalyzer {
   }
 
   async analyzeContent(content, path, character, level) {
+    // Limit content size to prevent LLM termination
+    const maxContentSize = 2000; // Reduced from 4000
+    const contentStr = typeof content === 'string' 
+      ? content.substring(0, maxContentSize) 
+      : JSON.stringify(content, null, 2).substring(0, maxContentSize);
+    
     const prompt = `You are ${character.name} (Level ${character.level} - ${character.level_name}).
 
 Analyze this ${level}:
 
 Path: ${path}
 Content:
-${typeof content === 'string' ? content.substring(0, 4000) : JSON.stringify(content, null, 2)}
+${contentStr}
 
 From your ${character.level_name} perspective, provide:
 1. A summary of what you observe
@@ -283,6 +301,13 @@ Respond in JSON format:
       return response;
     } catch (error) {
       console.warn(`Failed to analyze ${level} ${path}:`, error.message);
+      
+      // Check if it's a termination error
+      if (error.message.includes('terminated') || error.message.includes('timeout')) {
+        console.warn(`  LLM terminated for ${path}, skipping analysis`);
+        return null;
+      }
+      
       return {
         summary: `Analysis failed for ${path}`,
         insights: ['Analysis unavailable'],
@@ -407,5 +432,47 @@ Respond in JSON format:
   isNoteRecent(note, maxAge = 24 * 60 * 60 * 1000) { // 24 hours
     const age = Date.now() - note.timestamp;
     return age < maxAge;
+  }
+
+  shouldSkipDirectory(dirPath) {
+    // Skip directories with spaces, special characters, or very long names
+    const problematicPatterns = [
+      /\s/,  // Contains spaces
+      /[^\w\-_\/\.]/,  // Contains special characters
+      /node_modules/,
+      /\.git/,
+      /\.vscode/,
+      /\.idea/,
+      /dist/,
+      /build/,
+      /target/,
+      /bin/,
+      /obj/
+    ];
+    
+    const dirName = dirPath.split('/').pop();
+    
+    // Skip if directory name is too long
+    if (dirName && dirName.length > 100) {
+      return true;
+    }
+    
+    // Skip if matches problematic patterns
+    return problematicPatterns.some(pattern => pattern.test(dirPath));
+  }
+
+  shouldSkipLargeDirectory(dirInfo) {
+    // Skip directories with too many files or subdirectories
+    if (dirInfo.totalFiles > 100 || dirInfo.totalDirectories > 50) {
+      return true;
+    }
+    
+    // Skip if directory info is too large
+    const dirInfoSize = JSON.stringify(dirInfo).length;
+    if (dirInfoSize > 10000) { // 10KB limit
+      return true;
+    }
+    
+    return false;
   }
 }

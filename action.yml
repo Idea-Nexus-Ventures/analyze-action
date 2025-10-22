@@ -144,8 +144,14 @@ runs:
           echo ""
           echo "🔍 Starting deep dive analysis..."
           cd $GITHUB_ACTION_PATH
-          node bin/deep-dive.js --agent="architect" --output="json" > "/tmp/deep-dive-output.json"
-          echo "✓ Deep dive analysis complete"
+          
+          # Run deep dive with error handling
+          if node bin/deep-dive.js --agent="architect" --output="json" > "/tmp/deep-dive-output.json" 2>/dev/null; then
+            echo "✓ Deep dive analysis complete"
+          else
+            echo "⚠️ Deep dive analysis failed, but continuing..."
+            echo '{"summary": {"summary": "Deep dive analysis failed"}}' > "/tmp/deep-dive-output.json"
+          fi
         fi
         
         # Run coaching session
