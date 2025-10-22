@@ -7,6 +7,7 @@
 import { AgentState } from '../src/agent-state.js';
 import { ModelAdapter } from '../src/model-adapter.js';
 import { CharacterSystem } from '../src/character-system.js';
+import { NotesCache } from '../src/notes-cache.js';
 import { readdir, stat, readFile } from 'fs/promises';
 import { join } from 'path';
 import { parseArgs } from 'util';
@@ -143,10 +144,15 @@ async function getFilesRecursively(dir, ignoreDirs = []) {
 async function analyzeRepository(agentState, modelAdapter, character) {
   const repoContext = await getRepositoryContext();
   
+  // Load cached notes for context
+  const notesCache = new NotesCache(agentId);
+  const cachedNotes = await notesCache.listAllNotes();
+  
   // Limit repository context to avoid token limits
   const limitedContext = {
     ...repoContext,
-    structure: repoContext.structure.slice(0, 50) // Limit to 50 files
+    structure: repoContext.structure.slice(0, 50), // Limit to 50 files
+    cachedNotes: cachedNotes.slice(0, 10) // Include recent cached notes
   };
 
   const prompt = `You are ${character.name} (Level ${character.level} - ${character.level_name}).
