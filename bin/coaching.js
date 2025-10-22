@@ -32,7 +32,7 @@ async function runCoaching() {
     );
     await characterSystem.loadCharacters();
 
-    const coachingSystem = new CoachingSystem(modelAdapter, characterSystem);
+    const coachingSystem = new CoachingSystem(modelAdapter, characterSystem, values.output === 'json');
 
     // Load agent insights
     const agentInsights = {};

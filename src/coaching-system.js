@@ -8,13 +8,14 @@ import { CharacterSystem } from './character-system.js';
 import { join } from 'path';
 
 export class CoachingSystem {
-  constructor(modelAdapter, characterSystem) {
+  constructor(modelAdapter, characterSystem, silent = false) {
     this.modelAdapter = modelAdapter;
     this.characterSystem = characterSystem;
+    this.silent = silent;
   }
 
   async analyzeImprovements(repoContext, agentInsights) {
-    console.log('🎯 Analyzing potential improvements...');
+    if (!this.silent) console.log('🎯 Analyzing potential improvements...');
     
     const prompt = `Based on this repository analysis, identify 10-15 specific improvements that could be made:
 
@@ -59,7 +60,7 @@ Respond in JSON format:
   }
 
   async facilitateAgentDiscussion(improvements, agentInsights) {
-    console.log('💬 Facilitating agent discussion...');
+    if (!this.silent) console.log('💬 Facilitating agent discussion...');
     
     const agents = ['architect', 'educator', 'visionary', 'philosopher'];
     const discussions = {};
@@ -124,7 +125,7 @@ Respond in JSON format:
   }
 
   async generateCoachingReport(improvements, discussions) {
-    console.log('📋 Generating coaching report...');
+    if (!this.silent) console.log('📋 Generating coaching report...');
     
     const prompt = `Based on the agent discussions, create a comprehensive coaching report:
 
@@ -180,7 +181,7 @@ Respond in JSON format:
   }
 
   async runCoachingSession(repoContext, agentInsights) {
-    console.log('🎓 Starting coaching session...');
+    if (!this.silent) console.log('🎓 Starting coaching session...');
     
     // Step 1: Analyze improvements
     const improvements = await this.analyzeImprovements(repoContext, agentInsights);
