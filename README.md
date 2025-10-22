@@ -243,7 +243,13 @@ MIT
 
 ## Changelog
 
-### v1.2.7 (Latest)
+### v1.2.8 (Latest)
+- 🐛 **Fixed**: Deep dive analysis LLM termination issues
+- 🐛 **Fixed**: Analysis failing on directories with spaces/special characters
+- 🐛 **Fixed**: LLM token limit issues causing API termination
+- ✨ **Improved**: Better error handling and directory skipping for problematic paths
+
+### v1.2.7
 - 🐛 **Fixed**: Agent state file creation timing issue
 - 🐛 **Fixed**: ENOENT errors when coaching system can't find agent state files
 - 🐛 **Fixed**: Coaching system running before agent state files are created
