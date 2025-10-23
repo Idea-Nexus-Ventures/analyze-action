@@ -243,7 +243,14 @@ MIT
 
 ## Changelog
 
-### v1.2.8 (Latest)
+### v1.2.9 (Latest)
+- 🐛 **Fixed**: JSON parsing issues in deep dive and coaching systems
+- 🐛 **Fixed**: "No valid JSON found in response" errors
+- 🐛 **Fixed**: "Failed to parse JSON response" errors in coaching reports
+- 🐛 **Fixed**: Agent state file path resolution issues
+- ✨ **Improved**: Better JSON extraction with proper brace/bracket counting
+
+### v1.2.8
 - 🐛 **Fixed**: Deep dive analysis LLM termination issues
 - 🐛 **Fixed**: Analysis failing on directories with spaces/special characters
 - 🐛 **Fixed**: LLM token limit issues causing API termination
