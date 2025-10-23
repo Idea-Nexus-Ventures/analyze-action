@@ -60,10 +60,30 @@ export class ModelAdapter {
     const response = await this.call(model, prompt, options);
     
     try {
-      // Try to extract JSON from response
-      const jsonMatch = response.text.match(/\{[\s\S]*\}/);
+      // Try to extract JSON from response - handle both objects and arrays
+      const jsonMatch = response.text.match(/[\{\[][\s\S]*[\}\]]/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        const jsonStr = jsonMatch[0];
+        // Try to find the complete JSON by counting braces/brackets
+        let braceCount = 0;
+        let bracketCount = 0;
+        let endPos = 0;
+        
+        for (let i = 0; i < jsonStr.length; i++) {
+          const char = jsonStr[i];
+          if (char === '{') braceCount++;
+          if (char === '}') braceCount--;
+          if (char === '[') bracketCount++;
+          if (char === ']') bracketCount--;
+          
+          if (braceCount === 0 && bracketCount === 0 && i > 0) {
+            endPos = i + 1;
+            break;
+          }
+        }
+        
+        const completeJson = jsonStr.substring(0, endPos);
+        return JSON.parse(completeJson);
       }
     } catch (e) {
       throw new Error(`Failed to parse JSON response: ${e.message}`);

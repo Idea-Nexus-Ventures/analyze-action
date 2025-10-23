@@ -308,6 +308,12 @@ Respond in JSON format:
         return null;
       }
       
+      // Check if it's a JSON parsing error
+      if (error.message.includes('No valid JSON found') || error.message.includes('JSON')) {
+        console.warn(`  Invalid JSON response for ${path}, skipping analysis`);
+        return null;
+      }
+      
       return {
         summary: `Analysis failed for ${path}`,
         insights: ['Analysis unavailable'],

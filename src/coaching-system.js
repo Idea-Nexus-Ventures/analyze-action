@@ -168,6 +168,12 @@ Respond in JSON format:
       return response;
     } catch (error) {
       console.warn('Failed to generate coaching report:', error.message);
+      
+      // Check if it's a JSON parsing error
+      if (error.message.includes('Failed to parse JSON') || error.message.includes('JSON')) {
+        console.warn('  Invalid JSON response from coaching report generation');
+      }
+      
       return {
         executive_summary: 'Coaching report generation failed',
         consensus_priorities: [],
